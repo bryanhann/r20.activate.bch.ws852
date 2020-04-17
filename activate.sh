@@ -1,18 +1,20 @@
-here=$(dirname $(grealpath $0))
-export VJOT=$here
-function ws852 () {
-    FOLDER_=/Volumes/WS-852/RECORDER/FOLDER_
-    SCRIPT=${VJOT}/scripts/fix.py
-    SAVECWD=${PWD}
+R20_ws852_script=$(dirname $(grealpath $0))/scripts/fix.py
+R20_ws852_prefix=/Volumes/WS-852/RECORDER/FOLDER_
+
+function r20_ws852 () {
+    local cwd=${PWD}
     for xx in A B C D E; do
-        cd ${FOLDER_}${xx} || continue
-        python ${SCRIPT} .
+        # Attempt to enter the folder on the device itself.
+        cd ${R20_ws852_prefix}${xx} || continue
+        # In that folder, remane files as appropriately.
+        python ${R20_ws852_script} .
+        # Now iter through the names in the folder...
         for fname in $(/bin/ls -1 *.ws852.mp3) ; do
-             aws s3 mv ${fname} s3://bch.archive.voice/${fname}
+            #... and move them to AWS as appropriate.
+            aws s3 mv ${fname} s3://bch.archive.voice/${fname}
         done
     done
-    cd ${SAVECWD}
-    return
+    cd ${cwd}
 }
 
 
